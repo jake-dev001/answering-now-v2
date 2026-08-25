@@ -64,7 +64,6 @@ body {
   display: grid;
   grid-template-columns: minmax(0, .72fr) minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
 }
 
 /* connector overlay (lines + dots) sits behind content */
@@ -128,7 +127,7 @@ body {
   position: relative;
   display: flex; align-items: center; gap: 12px;
   padding: 6px 16px 6px 6px;
-  width: 100%; max-width: 100%;
+  width: 70%; max-width: 100%;
   border-radius: 999px;
   background: linear-gradient(180deg, #fff, #f7fbff);
   border: 1px solid var(--an-line);
@@ -138,6 +137,7 @@ body {
   cursor: pointer;
   overflow: hidden;
   will-change: transform;
+  left: 83px;
 }
 .an-chan::after { /* sheen sweep */
   content: "";
@@ -199,7 +199,7 @@ body {
 
 .an-phone {
   position: relative;
-  width: 100%;
+  width: 93%;
   border-radius: 40px;
   padding: 8px;
   background: linear-gradient(160deg, #2b3442, var(--an-shell));
