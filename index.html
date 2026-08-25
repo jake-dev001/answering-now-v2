@@ -19,6 +19,20 @@ body {
   font-family: "Inter", system-ui, sans-serif;
   padding: 24px 12px;
 }
+@media (max-width: 720px) { body { padding: 14px 6px; } html, body { overflow-x: hidden; } }
+
+/* ------------------------------------------------------------
+   MOBILE STRATEGY: the widget keeps its exact 720px desktop
+   layout and is uniformly scaled down to fit smaller screens.
+   .an-scaler measures the available width, .an-wrap is scaled.
+   ------------------------------------------------------------ */
+.an-scaler {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  overflow: visible;
+}
 
 .an-wrap {
   --an-blue: #1668e3;
@@ -34,10 +48,12 @@ body {
   --an-red: #ff2d20;
   --an-font: "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
 
-  position: relative;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 720px;
+  transform: scale(var(--an-scale, 1));
+  transform-origin: top left;
   font-family: var(--an-font);
   color: var(--an-ink);
   container-type: inline-size;
@@ -357,40 +373,16 @@ body {
 @keyframes an-flow { to { stroke-dashoffset: -24; } }
 @media (prefers-reduced-motion: reduce) { .an-wrap * { animation: none !important; } }
 
-/* ---------------- Responsive ---------------- */
-@container (max-width: 640px) {
-  .an-stage { gap: 10px; }
-  .an-caller-avatar { width: 62px; height: 62px; }
-  .an-caller-bubble p { font-size: 12px; }
-  .an-chan { padding: 5px 12px 5px 5px; gap: 9px; }
-  .an-chan-ico { width: 38px; height: 38px; }
-  .an-chan-ico svg { width: 18px; height: 18px; }
-  .an-chan b { font-size: 12px; }
-  .an-ctl { width: 40px; height: 40px; }
-  .an-ctl svg { width: 18px; height: 18px; }
-  .an-chat { height: 200px; }
-  .an-phone-col { max-width: 240px; }
-}
-@container (max-width: 480px) {
-  .an-stage { grid-template-columns: minmax(0, .68fr) minmax(0, 1fr); gap: 8px; }
-  .an-caller-avatar { width: 50px; height: 50px; }
-  .an-caller-avatar .an-phone-dot { width: 24px; height: 24px; right: -6px; bottom: -4px; }
-  .an-caller-bubble { padding: 8px 10px; border-radius: 14px; }
-  .an-caller-bubble p { font-size: 10.5px; }
-  .an-caller-bubble em { font-size: 9.5px; }
-  .an-chan { padding: 4px 9px 4px 4px; gap: 7px; }
-  .an-chan-ico { width: 30px; height: 30px; }
-  .an-chan-ico svg { width: 15px; height: 15px; }
-  .an-chan-ico .an-chan-badge { display: none; }
-  .an-chan b { font-size: 10px; }
-  .an-chan i.an-dot { display: none; }
-  .an-chat { height: 172px; }
-  .an-ctl { width: 34px; height: 34px; }
-  .an-ctl svg { width: 15px; height: 15px; }
-  .an-controls { gap: 7px; padding: 7px 8px 12px; }
-  .an-cta svg.an-cta-arrow { width: 42px; height: 48px; }
-  .an-brand-icon { width: 28px; height: 28px; }
-  .an-badge { font-size: 8.5px; padding: 2px 7px; }
+/* ---------------- Responsive ----------------
+   No layout reflow on mobile: the whole widget is scaled
+   proportionally by JS (--an-scale), so the mobile UI is an
+   exact miniature of the desktop UI. Only touch ergonomics
+   are nudged below. */
+@media (hover: none) {
+  .an-chan:hover { transform: none; }
+  .an-chan:active { transform: translateX(5px) scale(1.03); }
+  .an-ctl:hover { transform: none; }
+  .an-ctl:active { transform: scale(.94); }
 }
 @supports not (container-type: inline-size) {
   @media (max-width: 720px) {
@@ -483,9 +475,12 @@ body {
   }
 
   function mount(root) {
-    root.classList.add("an-wrap");
+    root.classList.add("an-scaler");
+    var wrap = document.createElement("div");
+    wrap.className = "an-wrap";
+    root.appendChild(wrap);
 
-    root.innerHTML =
+    wrap.innerHTML =
       '<svg class="an-connect" aria-hidden="true"></svg>' +
       '<div class="an-stage">' +
       '  <div class="an-left">' +
@@ -542,7 +537,53 @@ body {
       '<video class="an-media" playsinline webkit-playsinline muted preload="auto" ' +
       'style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"></video>';
 
-    var $ = function (s) { return root.querySelector(s); };
+    var $ = function (s) { return wrap.querySelector(s); };
+
+    /* ---- proportional scaling: mobile = miniature desktop ----
+       We measure the REAL painted bounds of the widget at 1:1 (which are
+       wider than the 720px design box because of the offset pills, the CTA
+       and the floating art), then scale + offset so nothing is ever cropped. */
+    var DESIGN_W = 720;
+    var scale = 1, box = null;
+
+    function measureBox() {
+      var prevScale = wrap.style.getPropertyValue("--an-scale");
+      var prevLeft = wrap.style.left, prevTop = wrap.style.top;
+      wrap.style.setProperty("--an-scale", 1);
+      wrap.style.left = "0px";
+      wrap.style.top = "0px";
+      var w = wrap.getBoundingClientRect();
+      var minL = 0, minT = 0, maxR = w.width, maxB = w.height;
+      var nodes = wrap.querySelectorAll("*");
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].classList.contains("an-media")) continue; /* off-screen audio proxy */
+        var r = nodes[i].getBoundingClientRect();
+        if (!r.width && !r.height) continue;
+        if (r.width <= 1 || r.height <= 1) continue;
+        var l = r.left - w.left, t = r.top - w.top;
+        if (l < minL) minL = l;
+        if (t < minT) minT = t;
+        if (l + r.width > maxR) maxR = l + r.width;
+        if (t + r.height > maxB) maxB = t + r.height;
+      }
+      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT) };
+      if (prevScale) wrap.style.setProperty("--an-scale", prevScale);
+      wrap.style.left = prevLeft; wrap.style.top = prevTop;
+      return box;
+    }
+
+    function applyScale() {
+      var avail = root.clientWidth || (root.parentNode && root.parentNode.clientWidth) || DESIGN_W;
+      var b = measureBox();
+      scale = Math.min(1, avail / b.w);
+      wrap.style.setProperty("--an-scale", scale);
+      wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
+      wrap.style.top = (-b.y * scale) + "px";
+      root.style.height = (b.h * scale) + "px";
+    }
+    applyScale();
+    window.addEventListener("resize", applyScale);
+    window.addEventListener("orientationchange", applyScale);
     var media = $(".an-media");
     var wave = $(".an-wave");
     var bars = Array.prototype.slice.call(wave.querySelectorAll("b"));
@@ -552,7 +593,7 @@ body {
     var curEl = $(".an-cur");
     var durEl = $(".an-dur");
     var cta = $(".an-cta");
-    var chans = Array.prototype.slice.call(root.querySelectorAll(".an-chan"));
+    var chans = Array.prototype.slice.call(wrap.querySelectorAll(".an-chan"));
     var connect = $(".an-connect");
     var stage = $(".an-stage");
 
@@ -600,20 +641,22 @@ body {
     function drawConnectors() {
       var sRect = stage.getBoundingClientRect();
       if (sRect.width === 0) return;
-      connect.setAttribute("viewBox", "0 0 " + sRect.width + " " + sRect.height);
-      connect.setAttribute("width", sRect.width);
-      connect.setAttribute("height", sRect.height);
+      var k = scale || 1;
+      var sw = sRect.width / k, sh = sRect.height / k;
+      connect.setAttribute("viewBox", "0 0 " + sw + " " + sh);
+      connect.setAttribute("width", sw);
+      connect.setAttribute("height", sh);
 
       var phone = $(".an-phone");
       var pRect = phone.getBoundingClientRect();
-      var phoneLeftX = pRect.left - sRect.left;
-      var phoneTop = pRect.top - sRect.top;
-      var phoneH = pRect.height;
+      var phoneLeftX = (pRect.left - sRect.left) / k;
+      var phoneTop = (pRect.top - sRect.top) / k;
+      var phoneH = pRect.height / k;
 
       chans.forEach(function (c, idx) {
         var r = c.getBoundingClientRect();
-        var startX = r.right - sRect.left;
-        var startY = r.top - sRect.top + r.height / 2;
+        var startX = (r.right - sRect.left) / k;
+        var startY = (r.top - sRect.top) / k + (r.height / k) / 2;
         var endX = phoneLeftX;
         var order = [1, 0, 2, 3][idx];
         if (order === undefined) order = idx;
@@ -777,12 +820,16 @@ body {
     tryAutoplay();
 
     /* connectors: draw + keep in sync on resize */
-    requestAnimationFrame(drawConnectors);
+    function relayout() { applyScale(); drawConnectors(); }
+    requestAnimationFrame(relayout);
+    window.addEventListener("resize", relayout);
+    window.addEventListener("orientationchange", function () { setTimeout(relayout, 250); });
     if (window.ResizeObserver) {
-      new ResizeObserver(drawConnectors).observe(stage);
-    } else {
-      window.addEventListener("resize", drawConnectors);
+      new ResizeObserver(function () { relayout(); }).observe(root);
+      new ResizeObserver(function () { drawConnectors(); }).observe(stage);
     }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+    window.addEventListener("load", relayout);
   }
 
   function boot() { document.querySelectorAll("[data-an-widget]").forEach(mount); }
