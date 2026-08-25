@@ -401,19 +401,33 @@ body {
 
   /* ---- CONFIG ---- */
   var CALL = {
-    audio: "/widget/call.mp3",
+    audio: "ai-agent-conversation.mp3",
   logo: "AnsweringNowAI-Logo.webp",
   icon: "AnsweringNowAI-Logo-Icon.jpg",
   woman: "caller-woman.png",
     fallbackDuration: 46,
     lines: [
-      { who: "caller", text: "Hello, I'd like to schedule an appointment for tomorrow. Do you have any availability?" },
-      { who: "agent", text: "Hello! I'd be happy to help you with that. Let me check available times for tomorrow. What time works best for you?" },
-      { who: "caller", text: "11am works great. Please book it!" },
-      { who: "agent", text: "Perfect! I've booked your appointment for tomorrow at 11:00 AM." },
-      { who: "agent", text: "You'll receive a confirmation text shortly. Anything else I can help with?" },
-      { who: "caller", text: "No, that's everything. Thank you so much!" },
-      { who: "agent", text: "You're very welcome. Have a great day!" }
+      { t: 0.0, who: "agent", text: "Hi, thanks for calling the salon. This is Mia. How can I help today?" },
+      { t: 4.9, who: "caller", text: "Hi, so I had a couple of questions. Do you, um, do hair colour?" },
+      { t: 10.7, who: "agent", text: "Yes, we do hair colour appointments \u2014 full colour, root touch-ups, highlights and colour refreshes." },
+      { t: 17.7, who: "caller", text: "Okay, okay. And can I add a trim with that?" },
+      { t: 21.8, who: "agent", text: "Yes, a trim can usually be added with a colour appointment." },
+      { t: 25.5, who: "caller", text: "Great, that's what I need. What are, like, your usual working hours?" },
+      { t: 30.9, who: "agent", text: "We usually open Monday to Saturday, from 9am to 6pm." },
+      { t: 35.0, who: "caller", text: "Alright, and are you open on Sunday by any chance?" },
+      { t: 39.1, who: "agent", text: "No, we're closed on Sundays." },
+      { t: 42.5, who: "caller", text: "Okay, no worries. I want to book an appointment for a hair colour then." },
+      { t: 47.3, who: "agent", text: "Sure, I can help book that in. May I please take your name?" },
+      { t: 53.0, who: "caller", text: "It's Sarah." },
+      { t: 57.2, who: "agent", text: "Thanks, Sarah. And your mobile number?" },
+      { t: 60.9, who: "caller", text: "Yep, it's on the way through now." },
+      { t: 66.1, who: "agent", text: "When would you like to come in for the appointment?" },
+      { t: 69.0, who: "caller", text: "So, um, do you have something for Saturday morning?" },
+      { t: 72.9, who: "agent", text: "Yes, for Saturday morning we have 9:30am and 11am available." },
+      { t: 77.9, who: "caller", text: "Yeah, 9:30 works." },
+      { t: 79.2, who: "agent", text: "Perfect. We'll book you for Saturday at 9:30am for hair colour. You'll receive a confirmation by text." },
+      { t: 81.1, who: "caller", text: "Amazing, thank you. I'll be there." },
+      { t: 83.0, who: "agent", text: "You're welcome, Sarah. Have a nice day." },
     ]
   };
 
