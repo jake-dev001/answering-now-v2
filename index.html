@@ -544,8 +544,8 @@ body {
       '        </div>' +
       '        <div class="an-controls">' +
       '          <button class="an-ctl an-mute is-ringing" type="button" aria-label="Unmute call">' + ICON.muted + '</button>' +
-      '          <span class="an-ctl" role="img" aria-label="Keypad (demo)">' + ICON.keypad + '</span>' +
       '          <button class="an-ctl is-play an-play" type="button" aria-label="Play call">' + ICON.play + '</button>' +
+      '          <span class="an-ctl" role="img" aria-label="Keypad (demo)">' + ICON.keypad + '</span>' +
       '          <span class="an-ctl is-end" role="img" aria-label="End call button (demo)">' + ICON.end + '</span>' +
       '        </div>' +
       '      </div>' +
@@ -721,6 +721,19 @@ body {
         if (endDots[i]) { endDots[i].setAttribute("cx", b.x); endDots[i].setAttribute("cy", b.y); }
       }
 
+      /* smooth arc used by the channel pills that feed the junction:
+         the line leaves the pill horizontally, humps away from the straight
+         run (lift > 0 = above, lift < 0 = below) and settles into the hub. */
+      function setArc(i, a, b, lift) {
+        var dx = b.x - a.x;
+        var c1x = a.x + dx * 0.5, c1y = a.y - lift * 0.55;
+        var c2x = b.x - dx * 0.18, c2y = b.y - lift * 0.9;
+        paths[i].setAttribute("d", "M " + a.x + " " + a.y +
+          " C " + c1x + " " + c1y + ", " + c2x + " " + c2y + ", " + b.x + " " + b.y);
+        if (startDots[i]) { startDots[i].setAttribute("cx", a.x); startDots[i].setAttribute("cy", a.y); }
+        if (endDots[i]) { endDots[i].setAttribute("cx", b.x); endDots[i].setAttribute("cy", b.y); }
+      }
+
       /* bubble -> phone (upper area) */
       setPath(0, rightMid($(".an-caller-bubble")), { x: endX, y: phoneTop + phoneH * 0.2 }, 0);
       /* Phone Calls & SMS pill -> phone (mid area) */
@@ -729,9 +742,9 @@ body {
       /* the three channel pills converge into one junction node */
       var wa = rightMid(chans[2]);
       var hub = { x: wa.x + Math.max(26, (endX - wa.x) * 0.38), y: wa.y };
-      setPath(2, rightMid(chans[1]), hub, 18);
+      setArc(2, rightMid(chans[1]), hub, 26);
       setPath(3, wa, hub, 10);
-      setPath(4, rightMid(chans[3]), hub, 18);
+      setArc(4, rightMid(chans[3]), hub, -18);
       /* junction -> phone */
       setPath(5, hub, { x: endX, y: phoneTop + phoneH * 0.72 }, 0);
       junction.setAttribute("transform", "translate(" + hub.x + "," + hub.y + ")");
