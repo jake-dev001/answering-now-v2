@@ -94,7 +94,7 @@ body {
 }
 
 /* ---------------- Left rail ---------------- */
-.an-left { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; align-self: stretch; justify-content: center; }
+.an-left { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; justify-content: center; }
 
 .an-caller { position: relative; display: flex; align-items: flex-start; gap: 10px; }
 .an-caller-avatar {
@@ -329,15 +329,16 @@ body {
 
 /* ---------------- CTA below the phone ---------------- */
 .an-cta {
-  position: relative;
+  position: absolute;
+  top: 100%;
+  left: 50%;
   margin-top: 12px;
+  transform: translateX(-50%) translate(-80px, -45px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   z-index: 3;
-  right:80px;
-  bottom:45px;
   pointer-events: none;
   color: var(--an-red);
   width: 86%;
@@ -550,7 +551,7 @@ body {
       '        </div>' +
       '      </div>' +
       '    </div>' +
-      '    <div class="an-cta">' + ICON.upArrow + '<span>Unmute to hear<br>live calls</span></div>' +
+      '    <div class="an-cta">' + ICON.upArrow + '<span>Unmute to hear<br>sample call0</span></div>' +
       '  </div>' +
       '</div>' +
       '<video class="an-media" playsinline webkit-playsinline muted preload="auto" ' +
@@ -713,40 +714,34 @@ body {
           y: (r.top - sRect.top) / k + (r.height / k) * (fracY || 0.5)
         };
       }
-      function setPath(i, a, b, bulge) {
-        var mX = (a.x + b.x) / 2 + (bulge || 0);
-        paths[i].setAttribute("d", "M " + a.x + " " + a.y +
-          " C " + mX + " " + a.y + ", " + mX + " " + b.y + ", " + b.x + " " + b.y);
-        if (startDots[i]) { startDots[i].setAttribute("cx", a.x); startDots[i].setAttribute("cy", a.y); }
-        if (endDots[i]) { endDots[i].setAttribute("cx", b.x); endDots[i].setAttribute("cy", b.y); }
-      }
-
-      /* smooth arc used by the channel pills that feed the junction:
-         the line leaves the pill horizontally, humps away from the straight
-         run (lift > 0 = above, lift < 0 = below) and settles into the hub. */
-      function setArc(i, a, b, lift) {
+      /* symmetric S-curve: both control points sit on the horizontal
+         tangents of their endpoints, so the line leaves the pill flat,
+         bends once, and arrives at the target flat. */
+      function setS(i, a, b, t) {
         var dx = b.x - a.x;
-        var c1x = a.x + dx * 0.5, c1y = a.y - lift * 0.55;
-        var c2x = b.x - dx * 0.18, c2y = b.y - lift * 0.9;
+        var k = (t == null ? 0.45 : t);
+        var c1x = a.x + dx * k, c2x = b.x - dx * k;
         paths[i].setAttribute("d", "M " + a.x + " " + a.y +
-          " C " + c1x + " " + c1y + ", " + c2x + " " + c2y + ", " + b.x + " " + b.y);
+          " C " + c1x + " " + a.y + ", " + c2x + " " + b.y + ", " + b.x + " " + b.y);
         if (startDots[i]) { startDots[i].setAttribute("cx", a.x); startDots[i].setAttribute("cy", a.y); }
         if (endDots[i]) { endDots[i].setAttribute("cx", b.x); endDots[i].setAttribute("cy", b.y); }
       }
 
       /* bubble -> phone (upper area) */
-      setPath(0, rightMid($(".an-caller-bubble")), { x: endX, y: phoneTop + phoneH * 0.2 }, 0);
+      setS(0, rightMid($(".an-caller-bubble")), { x: endX, y: phoneTop + phoneH * 0.2 });
       /* Phone Calls & SMS pill -> phone (mid area) */
-      setPath(1, rightMid(chans[0]), { x: endX, y: phoneTop + phoneH * 0.42 }, 0);
+      setS(1, rightMid(chans[0]), { x: endX, y: phoneTop + phoneH * 0.42 });
 
       /* the three channel pills converge into one junction node */
       var wa = rightMid(chans[2]);
-      var hub = { x: wa.x + Math.max(26, (endX - wa.x) * 0.38), y: wa.y };
-      setArc(2, rightMid(chans[1]), hub, 26);
-      setPath(3, wa, hub, 10);
-      setArc(4, rightMid(chans[3]), hub, -18);
+      /* hub sits a touch above the WhatsApp midline so the middle line
+         gets its own gentle upward S instead of running dead flat */
+      var hub = { x: wa.x + Math.max(26, (endX - wa.x) * 0.38), y: wa.y - 9 };
+      setS(2, rightMid(chans[1]), hub, 0.5);   /* Website Chat: down, then right */
+      setS(3, wa, hub, 0.5);                   /* WhatsApp: slight rise */
+      setS(4, rightMid(chans[3]), hub, 0.5);   /* Social Media: up, then right */
       /* junction -> phone */
-      setPath(5, hub, { x: endX, y: phoneTop + phoneH * 0.72 }, 0);
+      setS(5, hub, { x: endX, y: phoneTop + phoneH * 0.72 });
       junction.setAttribute("transform", "translate(" + hub.x + "," + hub.y + ")");
     }
 
