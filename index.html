@@ -574,6 +574,14 @@ body {
       wrap.style.top = "0px";
       var w = wrap.getBoundingClientRect();
       var minL = 0, minT = 0, maxR = w.width, maxB = w.height;
+      var phoneCol = wrap.querySelector(".an-phone-col");
+      var phoneRect = phoneCol ? phoneCol.getBoundingClientRect() : null;
+      var phoneBox = phoneRect ? {
+        x: phoneRect.left - w.left,
+        y: phoneRect.top - w.top,
+        w: phoneRect.width,
+        h: phoneRect.height
+      } : null;
       var nodes = wrap.querySelectorAll("*");
       for (var i = 0; i < nodes.length; i++) {
         if (nodes[i].classList.contains("an-media")) continue; /* off-screen audio proxy */
@@ -586,7 +594,7 @@ body {
         if (l + r.width > maxR) maxR = l + r.width;
         if (t + r.height > maxB) maxB = t + r.height;
       }
-      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT) };
+      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT), phone: phoneBox };
       if (prevScale) wrap.style.setProperty("--an-scale", prevScale);
       wrap.style.left = prevLeft; wrap.style.top = prevTop;
       return box;
@@ -595,11 +603,23 @@ body {
     function applyScale() {
       var avail = root.clientWidth || (root.parentNode && root.parentNode.clientWidth) || DESIGN_W;
       var b = measureBox();
-      scale = Math.min(1, avail / b.w);
-      wrap.style.setProperty("--an-scale", scale);
-      wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
-      wrap.style.top = (-b.y * scale) + "px";
-      root.style.height = (b.h * scale) + "px";
+      var isMobile = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
+      if (isMobile && b.phone) {
+        // On mobile only the phone is visible: scale it up to fill the screen width.
+        var targetW = avail * 0.85;
+        scale = targetW / b.phone.w;
+        var phoneCenter = b.phone.x + b.phone.w / 2;
+        wrap.style.setProperty("--an-scale", scale);
+        wrap.style.left = ((avail / 2) - phoneCenter * scale) + "px";
+        wrap.style.top = (-b.y * scale) + "px";
+        root.style.height = (b.h * scale) + "px";
+      } else {
+        scale = Math.min(1, avail / b.w);
+        wrap.style.setProperty("--an-scale", scale);
+        wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
+        wrap.style.top = (-b.y * scale) + "px";
+        root.style.height = (b.h * scale) + "px";
+      }
     }
     applyScale();
     window.addEventListener("resize", applyScale);
