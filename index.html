@@ -265,7 +265,8 @@ body {
   .an-ctl:active { transform: scale(.94); }
 }
 @media (max-width: 720px) {
-  .an-stage { padding: 0 10px; }
+  .an-stage { padding: 0; }
+  body { padding: 10px 0; }
 }
 </style>
 </head>
@@ -427,15 +428,16 @@ body {
     var DESIGN_W = 720;
     var scale = 1, box = null;
 
-    function measureBox() {
+    function measureBox(target) {
+      target = target || wrap;
       var prevScale = wrap.style.getPropertyValue("--an-scale");
       var prevLeft = wrap.style.left, prevTop = wrap.style.top;
       wrap.style.setProperty("--an-scale", 1);
       wrap.style.left = "0px";
       wrap.style.top = "0px";
-      var w = wrap.getBoundingClientRect();
+      var w = target.getBoundingClientRect();
       var minL = 0, minT = 0, maxR = w.width, maxB = w.height;
-      var nodes = wrap.querySelectorAll("*");
+      var nodes = target.querySelectorAll("*");
       for (var i = 0; i < nodes.length; i++) {
         if (nodes[i].classList.contains("an-media")) continue; /* off-screen audio proxy */
         var r = nodes[i].getBoundingClientRect();
@@ -447,16 +449,30 @@ body {
         if (l + r.width > maxR) maxR = l + r.width;
         if (t + r.height > maxB) maxB = t + r.height;
       }
-      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT) };
+      var wrapRect = wrap.getBoundingClientRect();
+      box = {
+        x: (w.left - wrapRect.left) + minL,
+        y: (w.top - wrapRect.top) + minT,
+        w: Math.max(1, maxR - minL),
+        h: Math.max(1, maxB - minT)
+      };
       if (prevScale) wrap.style.setProperty("--an-scale", prevScale);
       wrap.style.left = prevLeft; wrap.style.top = prevTop;
       return box;
     }
 
+    var MAX_SCALE = 1.6;
+
     function applyScale() {
       var avail = root.clientWidth || (root.parentNode && root.parentNode.clientWidth) || DESIGN_W;
-      var b = measureBox();
-      scale = Math.min(1, avail / b.w);
+      /* On narrow screens measure only the phone column so the surrounding
+         empty desktop stage doesn't force the widget to shrink. */
+      var narrow = avail < DESIGN_W;
+      var target = narrow ? (wrap.querySelector(".an-phone-col") || wrap) : wrap;
+      var b = measureBox(target);
+      scale = avail / b.w;
+      if (!narrow) scale = Math.min(1, scale);
+      scale = Math.min(scale, MAX_SCALE);
       wrap.style.setProperty("--an-scale", scale);
       wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
       wrap.style.top = (-b.y * scale) + "px";
