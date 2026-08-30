@@ -73,133 +73,15 @@ body {
   z-index: 0;
 }
 
-/* left rail sits closer to the phone: tighter gap, wider phone column share */
 .an-stage {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, .72fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
+  justify-items: center;
   align-items: center;
 }
 
-/* connector overlay (lines + dots) sits behind content */
-.an-connect {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  overflow: visible;
-}
-
-/* ---------------- Left rail ---------------- */
-.an-left { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; justify-content: center; }
-
-.an-caller { position: relative; display: flex; align-items: flex-start; gap: 10px; }
-.an-caller-avatar {
-  position: relative; flex: 0 0 auto;
-  width: 84px; height: 84px; border-radius: 999px;
-  border: 3px solid var(--an-blue);
-  background: #fff;
-  display: grid; place-items: center;
-  animation: an-float 6s ease-in-out infinite;
-}
-.an-caller-avatar > img { width: 100%; height: 100%; border-radius: 999px; object-fit: cover; object-position: 50% 14%; }
-.an-caller-avatar .an-phone-dot {
-  position: absolute; right: -10px; bottom: -8px;
-  width: 34px; height: 34px; border-radius: 999px;
-  background: var(--an-green); color: #fff; display: grid; place-items: center;
-  border: 3px solid #fff;
-  box-shadow: 0 8px 16px -6px rgba(109,193,10,.8);
-}
-.an-caller-avatar .an-phone-dot svg { width: 16px; height: 16px; }
-.an-caller-avatar .an-waves { position: absolute; left: -24px; top: -12px; color: var(--an-blue); opacity: .9; }
-
-.an-caller-bubble {
-  position: relative;
-  background: var(--an-card); border: 1px solid var(--an-line);
-  border-radius: 18px; padding: 12px 14px;
-  box-shadow: 0 18px 34px -26px rgba(11,63,150,.7);
-  animation: an-float 7s ease-in-out infinite;
-}
-.an-caller-bubble::after {
-  content: "";
-  position: absolute; left: 14px; bottom: -9px;
-  width: 18px; height: 18px;
-  background: var(--an-card);
-  border-right: 1px solid var(--an-line);
-  border-bottom: 1px solid var(--an-line);
-  transform: rotate(45deg) skew(-6deg, -6deg);
-  border-bottom-right-radius: 4px;
-}
-.an-caller-bubble em { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: var(--an-blue); margin-bottom: 3px; }
-.an-caller-bubble p { margin: 0; font-size: 13px; line-height: 1.45; font-weight: 800; color: var(--an-blue-deep); }
-
-.an-channels { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
-
-/* interactive channel pills */
-.an-chan {
-  position: relative;
-  display: flex; align-items: center; gap: 12px;
-  padding: 6px 16px 6px 6px;
-  width: 70%; max-width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff, #f7fbff);
-  border: 1px solid var(--an-line);
-  box-shadow: 0 16px 30px -24px rgba(11,63,150,.9), 0 1px 0 rgba(255,255,255,.9) inset;
-  animation: an-float 6.4s ease-in-out infinite;
-  transition: transform .28s cubic-bezier(.2,.8,.3,1), box-shadow .28s ease, border-color .28s ease;
-  cursor: pointer;
-  overflow: hidden;
-  will-change: transform;
-  left: 83px;
-}
-.an-chan::after { /* sheen sweep */
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.85) 48%, transparent 66%);
-  transform: translateX(-120%);
-  transition: transform .7s ease;
-  pointer-events: none;
-}
-.an-chan:hover::after { transform: translateX(120%); }
-.an-chan:nth-child(1) { animation-delay: 0s; }
-.an-chan:nth-child(2) { animation-delay: .5s; }
-.an-chan:nth-child(3) { animation-delay: 1s; }
-.an-chan:nth-child(4) { animation-delay: 1.5s; }
-.an-chan:hover, .an-chan.is-live {
-  transform: translateX(5px) scale(1.03);
-  border-color: rgba(22,104,227,.35);
-  box-shadow: 0 22px 38px -22px rgba(11,63,150,.65);
-}
-.an-chan.is-live .an-chan-ico { box-shadow: 0 0 0 6px rgba(22,104,227,.14); }
-.an-chan.is-live.green .an-chan-ico { box-shadow: 0 0 0 6px rgba(109,193,10,.16); }
-
-.an-chan-ico {
-  position: relative;
-  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 999px;
-  display: grid; place-items: center;
-  background: linear-gradient(150deg, #2f86ff, var(--an-blue-deep));
-  color: #fff;
-  transition: box-shadow .3s ease, transform .3s ease;
-}
-.an-chan:hover .an-chan-ico { transform: rotate(-6deg) scale(1.06); }
-.an-chan-ico svg { width: 23px; height: 23px; }
-.an-chan-ico.is-green { background: linear-gradient(150deg, #45c14b, #128a37); }
-.an-chan-ico .an-chan-badge {
-  position: absolute; right: -6px; bottom: -4px;
-  width: 22px; height: 22px; border-radius: 999px;
-  background: var(--an-green); color: #fff;
-  display: grid; place-items: center; border: 2px solid #fff;
-}
-.an-chan-ico .an-chan-badge svg { width: 11px; height: 11px; }
-.an-chan b { font-size: 13.5px; font-weight: 800; line-height: 1.2; color: var(--an-blue-deep); min-width: 0; }
-.an-chan i.an-dot {
-  margin-left: auto; width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto;
-  background: var(--an-line); transition: background .3s ease, box-shadow .3s ease;
-}
-.an-chan.is-live i.an-dot { background: var(--an-green); box-shadow: 0 0 0 4px rgba(109,193,10,.18); }
 
 /* ---------------- Phone (narrow) ---------------- */
 .an-phone-col {
@@ -371,7 +253,6 @@ body {
 @keyframes an-bar { 0%,100% { transform: scaleY(.7); } 50% { transform: scaleY(1.3); } }
 @keyframes an-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes an-draw { to { stroke-dashoffset: 0; } }
-@keyframes an-flow { to { stroke-dashoffset: -24; } }
 @media (prefers-reduced-motion: reduce) { .an-wrap * { animation: none !important; } }
 
 /* ---------------- Responsive ----------------
@@ -380,20 +261,11 @@ body {
    exact miniature of the desktop UI. Only touch ergonomics
    are nudged below. */
 @media (hover: none) {
-  .an-chan:hover { transform: none; }
-  .an-chan:active { transform: translateX(5px) scale(1.03); }
   .an-ctl:hover { transform: none; }
   .an-ctl:active { transform: scale(.94); }
 }
 @media (max-width: 720px) {
-  .an-left { display: none; }
-  .an-connect { display: none; }
-  .an-stage { grid-template-columns: minmax(0, 1fr); }
-}
-@supports not (container-type: inline-size) {
-  @media (max-width: 720px) {
-    .an-stage { grid-template-columns: minmax(0, .68fr) minmax(0, 1fr); gap: 8px; }
-  }
+  .an-stage { padding: 0 10px; }
 }
 </style>
 </head>
@@ -407,35 +279,31 @@ body {
 
   /* ---- CONFIG ---- */
   var CALL = {
-    audio: "DogGroomingPhoneScript.mp3",
+    audio: "hair-stylist-audio.mp3",
   logo: "AnsweringNowAI-Logo.webp",
   icon: "AnsweringNowAI-Logo-Icon.jpg",
   woman: "caller-woman.png",
     fallbackDuration: 46,
     lines: [
-{ t: 0.0, who: "agent", text: "Thank you for calling Happy Paws Grooming. I'm Jessica, the AI receptionist and I can help with questions, services or scheduling. How can I help you today?" },
-{ t: 9.0, who: "caller", text: "Hi, I'm looking to get my dog groomed and wanted to find out about your services." },
-{ t: 14.0, who: "agent", text: "Sounds good. We offer full service grooming including bathing, haircuts, nail trimming, ear cleaning and brushing. What kind of dog do you have?" },
-{ t: 22.0, who: "caller", text: "I have a golden retriever." },
-{ t: 24.0, who: "agent", text: "Great. And what's your dog's name?" },
-{ t: 26.0, who: "caller", text: "His name is Cooper." },
-{ t: 27.0, who: "agent", text: "That's a nice name for a golden retriever. Our full grooming service typically includes a bath, blow dry, brushing and de shedding, nail trim, ear cleaning and trimming as needed." },
-{ t: 36.0, who: "caller", text: "Okay, how much does that usually cost?" },
-{ t: 39.0, who: "agent", text: "Pricing for a golden retriever typically starts around $95, depending on the size, coat condition and the amount of grooming needed. The groomer can confirm the final price after seeing his coat." },
-{ t: 49.0, who: "caller", text: "Okay, that sounds good. Do you have anything available this week?" },
-{ t: 53.0, who: "agent", text: "Sure. I can check our calendar for you. We have an opening Thursday at 2pm or Friday at 10:30am would either of those work" },
-{ t: 59.0, who: "caller", text: "Friday at 10:30 would be perfect." },
-{ t: 61.0, who: "agent", text: "Great. I can reserve Friday at 10:30aman. For Cooper. May I get your name?" },
-{ t: 65.0, who: "caller", text: "Yes, it's Michael Davis." },
-{ t: 67.0, who: "agent", text: "Thanks, Michael. And what's the best phone number for your appointment confirmation?" },
-{ t: 71.0, who: "caller", text: "It's 555-818-1234." },
-{ t: 75.0, who: "agent", text: "Perfect. I have Cooper scheduled for Friday at 10:30am for a full grooming service." },
-{ t: 79.0, who: "caller", text: "Great. Thank you. That was painless." },
-{ t: 82.0, who: "agent", text: "You're very welcome. We look forward to meeting you and Cooper on Friday. Is there anything else I can help you with today?" },
-{ t: 88.0, who: "caller", text: "No, that's everything." },
-{ t: 89.0, who: "agent", text: "Wonderful. Thanks for calling Happypaws Grooming. Have a great day." },
-{ t: 93.0, who: "caller", text: "You too. Bye." },
-{ t: 94.0, who: "agent", text: "Goodbye." },
+{ t: 0.0, who: "agent", text: "Thank you for calling Bella Hair Studio. I'm Ashley, the AI Receptionist for Bella. She is currently with a client or not available right now, but I can help answer any questions about our services and pricing, check availability or even book an appointment for you. How can I help you today?" },
+{ t: 18.0, who: "caller", text: "Hi, I'm looking for a new hairstylist and I wanted to ask about getting highlights." },
+{ t: 22.0, who: "agent", text: "Absolutely. I'd love to help. Are you looking for full highlights, partial highlights or something like a balayage?" },
+{ t: 29.0, who: "caller", text: "I'm thinking of balayage. I want something natural, but a little lighter." },
+{ t: 33.0, who: "agent", text: "A balayage would be a great option for that. It gives you a softer, more natural look and grows out nicely. Is your hair currently colored?" },
+{ t: 42.0, who: "caller", text: "Yes, but it's been about six months since I had anything done." },
+{ t: 45.0, who: "agent", text: "Okay, I see." },
+{ t: 46.0, who: "caller", text: "Oh, by the way, how much does balayage cost?" },
+{ t: 49.0, who: "agent", text: "Our balayage services start at $175. The final price can vary depending on your hair length, thickness and what you'd like to achieve. Your stylist will go over everything with you before getting started." },
+{ t: 62.0, who: "caller", text: "Okay, that sounds good. Do you have anything available Saturday?" },
+{ t: 65.0, who: "agent", text: "Let me check the schedule for you. We have an opening Saturday at 11am or 2:30pm." },
+{ t: 70.0, who: "caller", text: "Can I do 11?" },
+{ t: 71.0, who: "agent", text: "Absolutely. I can reserve that for you. May I get your name?" },
+{ t: 75.0, who: "caller", text: "It's Jennifer." },
+{ t: 76.0, who: "agent", text: "Thanks, Jennifer. And what's the best phone number for your appointment confirmation?" },
+{ t: 80.0, who: "caller", text: "It's 555-818-1234." },
+{ t: 84.0, who: "agent", text: "Perfect. I have you scheduled for Saturday at 11am for a balayage appointment. Great. Thank you so much. You're very welcome, Jennifer. We look forward to seeing you Saturday. Is there anything else I can help you with?" },
+{ t: 96.0, who: "caller", text: "Nope, that's it." },
+{ t: 97.0, who: "agent", text: "Great. Thanks for calling Bella Hair Studio. Have a wonderful day. You too. Bye. Goodbye." },
     ]
   };
 
@@ -468,12 +336,6 @@ body {
       '<path d="M32 6l-10 14M32 6l10 14" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
-  var CHANNELS = [
-    { icon: ICON.phone, label: "Phone Calls<br>&amp; SMS / Text", green: false, badge: true },
-    { icon: ICON.globe, label: "Website Chat", green: false },
-    { icon: ICON.whatsapp, label: "WhatsApp", green: true },
-    { icon: ICON.social, label: "Social Media", green: false }
-  ];
 
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -503,24 +365,7 @@ body {
     root.appendChild(wrap);
 
     wrap.innerHTML =
-      '<svg class="an-connect" aria-hidden="true"></svg>' +
       '<div class="an-stage">' +
-      '  <div class="an-left">' +
-      '    <div class="an-caller">' +
-      '      <div class="an-caller-avatar"><span class="an-waves">' + ICON.ripple + '</span><img src="' + CALL.woman + '" alt="Caller" />' +
-      '        <span class="an-phone-dot">' + ICON.phone + '</span></div>' +
-      '      <div class="an-caller-bubble"><em>New Customer</em>' +
-      "        <p>Hello, I'd like to schedule an appointment for tomorrow. Do you have any availability?</p></div>" +
-      '    </div>' +
-      '    <div class="an-channels">' +
-      CHANNELS.map(function (c) {
-        return '<div class="an-chan' + (c.green ? " green" : "") + '" tabindex="0">' +
-          '<span class="an-chan-ico' + (c.green ? " is-green" : "") + '">' + c.icon +
-          (c.badge ? '<span class="an-chan-badge">' + ICON.chatDot + "</span>" : "") + "</span>" +
-          "<b>" + c.label + "</b><i class=\"an-dot\"></i></div>";
-      }).join("") +
-      '    </div>' +
-      '  </div>' +
       '  <div class="an-phone-col">' +
       '    <div class="an-phone">' +
       '      <div class="an-screen">' +
@@ -576,14 +421,6 @@ body {
       wrap.style.top = "0px";
       var w = wrap.getBoundingClientRect();
       var minL = 0, minT = 0, maxR = w.width, maxB = w.height;
-      var phoneCol = wrap.querySelector(".an-phone-col");
-      var phoneRect = phoneCol ? phoneCol.getBoundingClientRect() : null;
-      var phoneBox = phoneRect ? {
-        x: phoneRect.left - w.left,
-        y: phoneRect.top - w.top,
-        w: phoneRect.width,
-        h: phoneRect.height
-      } : null;
       var nodes = wrap.querySelectorAll("*");
       for (var i = 0; i < nodes.length; i++) {
         if (nodes[i].classList.contains("an-media")) continue; /* off-screen audio proxy */
@@ -596,7 +433,7 @@ body {
         if (l + r.width > maxR) maxR = l + r.width;
         if (t + r.height > maxB) maxB = t + r.height;
       }
-      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT), phone: phoneBox };
+      box = { x: minL, y: minT, w: Math.max(1, maxR - minL), h: Math.max(1, maxB - minT) };
       if (prevScale) wrap.style.setProperty("--an-scale", prevScale);
       wrap.style.left = prevLeft; wrap.style.top = prevTop;
       return box;
@@ -605,23 +442,11 @@ body {
     function applyScale() {
       var avail = root.clientWidth || (root.parentNode && root.parentNode.clientWidth) || DESIGN_W;
       var b = measureBox();
-      var isMobile = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
-      if (isMobile && b.phone) {
-        // On mobile only the phone is visible: scale it up to fill the screen width.
-        var targetW = avail * 0.85;
-        scale = targetW / b.phone.w;
-        var phoneCenter = b.phone.x + b.phone.w / 2;
-        wrap.style.setProperty("--an-scale", scale);
-        wrap.style.left = ((avail / 2) - phoneCenter * scale) + "px";
-        wrap.style.top = (-b.y * scale) + "px";
-        root.style.height = (b.h * scale) + "px";
-      } else {
-        scale = Math.min(1, avail / b.w);
-        wrap.style.setProperty("--an-scale", scale);
-        wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
-        wrap.style.top = (-b.y * scale) + "px";
-        root.style.height = (b.h * scale) + "px";
-      }
+      scale = Math.min(1, avail / b.w);
+      wrap.style.setProperty("--an-scale", scale);
+      wrap.style.left = (-b.x * scale + (avail - b.w * scale) / 2) + "px";
+      wrap.style.top = (-b.y * scale) + "px";
+      root.style.height = (b.h * scale) + "px";
     }
     applyScale();
     window.addEventListener("resize", applyScale);
@@ -635,139 +460,10 @@ body {
     var curEl = $(".an-cur");
     var durEl = $(".an-dur");
     var cta = $(".an-cta");
-    var chans = Array.prototype.slice.call(wrap.querySelectorAll(".an-chan"));
-    var connect = $(".an-connect");
-    var stage = $(".an-stage");
 
     var muted = true, shown = -1, typing = null, finished = false;
     var fake = false, fakeT = 0, fakePlaying = false, lastFrame = 0, autoplayHooked = false;
 
-    /* ---- connector lines + dots (channel pills -> phone) ---- */
-    var BLUE = "#1668e3", GREEN = "#6dc10a";
-    var ns = "http://www.w3.org/2000/svg";
-    var paths = [], endDots = [], startDots = [], junction = null;
-
-    function addConnector(lineColor, dotColor, opts) {
-      opts = opts || {};
-      var p = document.createElementNS(ns, "path");
-      p.setAttribute("fill", "none");
-      p.setAttribute("stroke", lineColor);
-      p.setAttribute("stroke-width", "2");
-      p.setAttribute("stroke-linecap", "round");
-      p.setAttribute("stroke-dasharray", "3 5");
-      p.setAttribute("opacity", "0.9");
-      p.style.animation = "an-flow 1s linear infinite";
-      connect.appendChild(p);
-      paths.push(p);
-
-      var sd = null;
-      if (opts.startDot !== false) {
-        sd = document.createElementNS(ns, "circle");
-        sd.setAttribute("r", "3.5");
-        sd.setAttribute("fill", lineColor);
-        connect.appendChild(sd);
-      }
-      startDots.push(sd);
-
-      var ed = null;
-      if (opts.endDot !== false) {
-        ed = document.createElementNS(ns, "circle");
-        ed.setAttribute("r", "5");
-        ed.setAttribute("fill", "#fff");
-        ed.setAttribute("stroke", dotColor);
-        ed.setAttribute("stroke-width", "2.5");
-        connect.appendChild(ed);
-      }
-      endDots.push(ed);
-    }
-
-    function buildConnectors() {
-      connect.innerHTML = "";
-      paths = []; endDots = []; startDots = []; junction = null;
-      /* 0: caller bubble -> phone (blue)
-         1: Phone Calls & SMS pill -> phone (green)
-         2: Website Chat -> junction
-         3: WhatsApp -> junction
-         4: Social Media -> junction
-         5: junction -> phone */
-      addConnector(BLUE, GREEN);
-      addConnector(GREEN, BLUE);
-      addConnector(GREEN, GREEN, { endDot: false });
-      addConnector(GREEN, GREEN, { endDot: false });
-      addConnector(BLUE, BLUE, { endDot: false });
-      addConnector(BLUE, BLUE, { startDot: false });
-
-      /* shared junction node where the three channel lines meet */
-      junction = document.createElementNS(ns, "g");
-      var halo = document.createElementNS(ns, "circle");
-      halo.setAttribute("r", "7"); halo.setAttribute("fill", GREEN);
-      halo.setAttribute("opacity", "0.28");
-      var core = document.createElementNS(ns, "circle");
-      core.setAttribute("r", "4.6"); core.setAttribute("fill", GREEN);
-      var inner = document.createElementNS(ns, "circle");
-      inner.setAttribute("r", "1.8"); inner.setAttribute("fill", "#fff");
-      junction.appendChild(halo); junction.appendChild(core); junction.appendChild(inner);
-      connect.appendChild(junction);
-    }
-
-    function drawConnectors() {
-      var left = $(".an-left");
-      if (!left || getComputedStyle(left).display === "none") return;
-      var sRect = stage.getBoundingClientRect();
-      if (sRect.width === 0) return;
-      var k = scale || 1;
-      var sw = sRect.width / k, sh = sRect.height / k;
-      connect.setAttribute("viewBox", "0 0 " + sw + " " + sh);
-      connect.setAttribute("width", sw);
-      connect.setAttribute("height", sh);
-
-      if (paths.length !== 6) buildConnectors();
-
-      var phone = $(".an-phone");
-      var pRect = phone.getBoundingClientRect();
-      var endX = (pRect.left - sRect.left) / k;
-      var phoneTop = (pRect.top - sRect.top) / k;
-      var phoneH = pRect.height / k;
-
-      function rightMid(el, fracY) {
-        var r = el.getBoundingClientRect();
-        return {
-          x: (r.right - sRect.left) / k,
-          y: (r.top - sRect.top) / k + (r.height / k) * (fracY || 0.5)
-        };
-      }
-      /* symmetric S-curve: both control points sit on the horizontal
-         tangents of their endpoints, so the line leaves the pill flat,
-         bends once, and arrives at the target flat. */
-      function setS(i, a, b, t) {
-        var dx = b.x - a.x;
-        var k = (t == null ? 0.45 : t);
-        var c1x = a.x + dx * k, c2x = b.x - dx * k;
-        paths[i].setAttribute("d", "M " + a.x + " " + a.y +
-          " C " + c1x + " " + a.y + ", " + c2x + " " + b.y + ", " + b.x + " " + b.y);
-        if (startDots[i]) { startDots[i].setAttribute("cx", a.x); startDots[i].setAttribute("cy", a.y); }
-        if (endDots[i]) { endDots[i].setAttribute("cx", b.x); endDots[i].setAttribute("cy", b.y); }
-      }
-
-      /* bubble -> phone (upper area) */
-      setS(0, rightMid($(".an-caller-bubble")), { x: endX, y: phoneTop + phoneH * 0.2 });
-      /* Phone Calls & SMS pill -> phone (mid area) */
-      setS(1, rightMid(chans[0]), { x: endX, y: phoneTop + phoneH * 0.42 });
-
-      /* the three channel pills converge into one junction node */
-      var wa = rightMid(chans[2]);
-      /* hub sits a touch above the WhatsApp midline so the middle line
-         gets its own gentle upward S instead of running dead flat */
-      var hub = { x: wa.x + Math.max(26, (endX - wa.x) * 0.38), y: wa.y - 9 };
-      setS(2, rightMid(chans[1]), hub, 0.5);   /* Website Chat: down, then right */
-      setS(3, wa, hub, 0.5);                   /* WhatsApp: slight rise */
-      setS(4, rightMid(chans[3]), hub, 0.5);   /* Social Media: up, then right */
-      /* junction -> phone */
-      setS(5, hub, { x: endX, y: phoneTop + phoneH * 0.72 });
-      junction.setAttribute("transform", "translate(" + hub.x + "," + hub.y + ")");
-    }
-
-    buildConnectors();
 
 
     function duration() {
@@ -779,12 +475,6 @@ body {
 
     timeLines(duration());
 
-    /* rotating "live" highlight on the channel pills */
-    var chanIdx = 0;
-    setInterval(function () {
-      chans.forEach(function (c, i) { c.classList.toggle("is-live", i === chanIdx); });
-      chanIdx = (chanIdx + 1) % chans.length;
-    }, 2200);
 
     function renderChat(force) {
       var t = currentTime(), n = -1;
@@ -915,13 +605,12 @@ body {
     tryAutoplay();
 
     /* connectors: draw + keep in sync on resize */
-    function relayout() { applyScale(); drawConnectors(); }
+    function relayout() { applyScale(); }
     requestAnimationFrame(relayout);
     window.addEventListener("resize", relayout);
     window.addEventListener("orientationchange", function () { setTimeout(relayout, 250); });
     if (window.ResizeObserver) {
       new ResizeObserver(function () { relayout(); }).observe(root);
-      new ResizeObserver(function () { drawConnectors(); }).observe(stage);
     }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
     window.addEventListener("load", relayout);
