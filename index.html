@@ -283,14 +283,17 @@ body {
   logo: "AnsweringNowAI-Logo.webp",
   icon: "AnsweringNowAI-Logo-Icon.jpg",
   woman: "caller-woman.png",
-    fallbackDuration: 46,
+    /* seconds; used only if the audio file cannot be loaded */
+    fallbackDuration: 105,
+    /* global nudge (seconds) applied to every line time; +ve = captions later */
+    offset: 0,
     lines: [
 { t: 0.0, who: "agent", text: "Thank you for calling Bella Hair Studio. I'm Ashley, the AI Receptionist for Bella. She is currently with a client or not available right now, but I can help answer any questions about our services and pricing, check availability or even book an appointment for you. How can I help you today?" },
 { t: 18.0, who: "caller", text: "Hi, I'm looking for a new hairstylist and I wanted to ask about getting highlights." },
-{ t: 21.0, who: "agent", text: "Absolutely. I'd love to help. Are you looking for full highlights, partial highlights or something like a balayage?" },
-{ t: 27.0, who: "caller", text: "I'm thinking of balayage. I want something natural, but a little lighter." },
-{ t: 31.0, who: "agent", text: "A balayage would be a great option for that. It gives you a softer, more natural look and grows out nicely. Is your hair currently colored?" },
-{ t: 40.0, who: "caller", text: "Yes, but it's been about six months since I had anything done." },
+{ t: 22.0, who: "agent", text: "Absolutely. I'd love to help. Are you looking for full highlights, partial highlights or something like a balayage?" },
+{ t: 29.0, who: "caller", text: "I'm thinking of balayage. I want something natural, but a little lighter." },
+{ t: 33.0, who: "agent", text: "A balayage would be a great option for that. It gives you a softer, more natural look and grows out nicely. Is your hair currently colored?" },
+{ t: 42.0, who: "caller", text: "Yes, but it's been about six months since I had anything done." },
 { t: 45.0, who: "agent", text: "Okay, I see." },
 { t: 46.0, who: "caller", text: "Oh, by the way, how much does balayage cost?" },
 { t: 49.0, who: "agent", text: "Our balayage services start at $175. The final price can vary depending on your hair length, thickness and what you'd like to achieve. Your stylist will go over everything with you before getting started." },
@@ -351,11 +354,22 @@ body {
     if (/^https?:/i.test(p)) return p;
     return p.split("/").map(function (seg) { return encodeURIComponent(decodeURIComponent(seg)); }).join("/");
   }
-  function timeLines(duration) {
-    var weights = CALL.lines.map(function (l) { return Math.max(10, l.text.length); });
-    var total = weights.reduce(function (a, b) { return a + b; }, 0);
-    var acc = 0;
-    CALL.lines.forEach(function (l, i) { l.t = (acc / total) * duration; acc += weights[i]; });
+  /* The transcript timestamps are the single source of truth. We only derive
+     an approximate END time per line (how long that person is still speaking)
+     so the "thinking" dots can be restricted to genuine silence. */
+  var SPEECH_WPS = 2.75;   /* words per second of natural speech */
+  var TAIL_GAP   = 0.15;   /* never let a line's speech touch the next line */
+  function prepareLines(duration) {
+    var off = CALL.offset || 0;
+    CALL.lines.forEach(function (l, i) {
+      if (l.t0 == null) l.t0 = l.t;                 /* remember authored time */
+      l.t = l.t0 + off;
+      var next = CALL.lines[i + 1];
+      var limit = next ? (next.t0 + off) - TAIL_GAP : duration;
+      var words = (l.text.match(/\S+/g) || []).length;
+      var spoken = l.t + words / SPEECH_WPS + 0.35;
+      l.end = Math.max(l.t + 0.4, Math.min(spoken, limit));
+    });
   }
 
   function mount(root) {
@@ -463,6 +477,9 @@ body {
 
     var muted = true, shown = -1, typing = null, finished = false;
     var fake = false, fakeT = 0, fakePlaying = false, lastFrame = 0, autoplayHooked = false;
+    var MIN_GAP = 0.4;    /* silence shorter than this shows no dots at all */
+    var MAX_DOTS = 1.2;   /* dots appear at most this long before the reply */
+    var rafId = 0;
 
 
 
@@ -473,14 +490,24 @@ body {
     function currentTime() { return fake ? fakeT : media.currentTime || 0; }
     function isPaused() { return fake ? !fakePlaying : media.paused; }
 
-    timeLines(duration());
+    prepareLines(duration());
 
 
     function renderChat(force) {
       var t = currentTime(), n = -1;
       while (n + 1 < CALL.lines.length && t >= CALL.lines[n + 1].t) n++;
       var next = CALL.lines[n + 1];
-      var typ = next && next.t - t < 1.6 && next.t - t > 0 ? next.who : null;
+      var prev = n >= 0 ? CALL.lines[n] : null;
+      /* Dots ONLY inside real silence: after the current speaker has finished
+         and before the next one starts. Never while a voice is talking. */
+      var typ = null;
+      if (next) {
+        var gapStart = prev ? prev.end : 0;
+        var gapEnd = next.t;
+        if (gapEnd - gapStart >= MIN_GAP && t >= gapStart && t < gapEnd) {
+          if (gapEnd - t <= MAX_DOTS) typ = next.who;
+        }
+      }
       if (!force && n === shown && typ === typing) return;
       shown = n; typing = typ;
       chat.innerHTML = CALL.lines.slice(0, shown + 1).map(function (l) {
@@ -522,7 +549,7 @@ body {
     }
     function goFake() {
       if (fake) return;
-      fake = true; timeLines(duration()); fakePlaying = true; lastFrame = 0;
+      fake = true; prepareLines(duration()); fakePlaying = true; lastFrame = 0;
       setPlayUI(true); requestAnimationFrame(fakeLoop); tick();
     }
     function play() {
@@ -586,12 +613,26 @@ body {
       shown = -1; tick();
     });
 
-    media.addEventListener("loadedmetadata", function () { timeLines(duration()); renderChat(true); tick(); });
-    media.addEventListener("timeupdate", function () { if (!fake) tick(); });
-    media.addEventListener("play", function () { if (!fake) setPlayUI(true); });
-    media.addEventListener("pause", function () { if (!fake) setPlayUI(false); });
-    media.addEventListener("ended", function () { finished = true; media.currentTime = 0; shown = -1; setPlayUI(false); tick(); });
-    media.addEventListener("error", goFake);
+    media.addEventListener("loadedmetadata", function () { prepareLines(duration()); renderChat(true); tick(); });
+    /* Frame-accurate rendering driven by the REAL audio clock: reading
+       media.currentTime every frame means the chat can never drift from the
+       voice, and it recovers instantly after buffering or a seek. */
+    function mediaLoop() {
+      rafId = 0;
+      if (fake || media.paused) return;
+      tick();
+      rafId = requestAnimationFrame(mediaLoop);
+    }
+    function startLoop() { if (!rafId && !fake) rafId = requestAnimationFrame(mediaLoop); }
+    function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
+    media.addEventListener("timeupdate", function () { if (!fake) { tick(); startLoop(); } });
+    media.addEventListener("seeked", function () { if (!fake) { shown = -1; tick(); } });
+    media.addEventListener("play", function () { if (!fake) { setPlayUI(true); startLoop(); } });
+    media.addEventListener("playing", function () { if (!fake) startLoop(); });
+    media.addEventListener("pause", function () { if (!fake) { setPlayUI(false); stopLoop(); tick(); } });
+    media.addEventListener("waiting", function () { if (!fake) stopLoop(); });
+    media.addEventListener("ended", function () { finished = true; stopLoop(); media.currentTime = 0; shown = -1; setPlayUI(false); tick(); });
+    media.addEventListener("error", function () { stopLoop(); goFake(); });
 
     media.muted = true;
     media.setAttribute("src", mediaSrc(CALL.audio));
